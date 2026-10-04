@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "product": {
+    "id": "stable-source-product-id",
+    "storeId": "store-id",
+    "name": "Original product title",
+    "brand": "Brand",
+    "category": "GPU|CPU|BOARD|RAM|SSD|HDD|PSU|CASE|COOLER|FANS|MONITOR|LAPTOP|TABLET|ACCESSORY|BUILD",
+    "model": "Manufacturer model",
+    "priceIqd": 0,
+    "currency": "IQD",
+    "availability": "in_stock|out_of_stock|unknown",
+    "imageUrl": "https://...",
+    "productUrl": "https://...",
+    "spec": "Normalized short specifications",
+    "sourceUpdatedAt": null,
+    "lastCheckedAt": null
+  },
+  "rules": {
+    "dedupeKey": ["brand","model"],
+    "neverInventPrice": true,
+    "neverInventImage": true,
+    "preferExactProductUrl": true,
+    "keepSourceAttribution": true
+  }
+}
