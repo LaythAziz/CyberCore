@@ -2,6 +2,9 @@ name: CyberCore Catalog Sync
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "scripts/catalog_sync.py"
   schedule:
     - cron: "17 */6 * * *"
 
