@@ -33,3 +33,5 @@ html{scroll-behavior:auto}.top{background:#02070ccc;backdrop-filter:blur(24px) s
 .productCard:has(img) .imgWrap:after{content:"SOURCE IMAGE";display:block;position:absolute;top:10px;left:10px;padding:5px 8px;border-radius:999px;background:rgba(2,9,15,.82);border:1px solid rgba(91,210,255,.35);color:var(--cyan);font-size:8px;font-weight:900;letter-spacing:.7px}
 @media(max-width:900px){.storeDirectoryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.storeHero{flex-direction:column}.storeMetric{min-height:90px}}
 @media(max-width:620px){.storeDirectoryGrid{grid-template-columns:1fr}.storeHero{padding:18px;border-radius:18px}}
+
+.catalogSyncStatus{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:12px 15px;border:1px solid rgba(91,210,255,.18);border-radius:14px;background:rgba(91,210,255,.035);color:var(--muted);font-size:11px}.catalogSyncStatus b{color:#fff}.syncDot{width:8px;height:8px;border-radius:50%;background:#58e6a8;box-shadow:0 0 14px #58e6a8;animation:pulse 1.8s infinite}
