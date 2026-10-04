@@ -157,7 +157,7 @@ function priceHistoryInfo(p){
  }
  if(!previous)return {previous:0,direction:'none',delta:0,pct:0,when:''};
  const delta=current-previous;
- return {previous,direction:delta<0?'down':delta>0?'up':'same',delta,pct=Math.abs(delta)/previous*100,when};
+ return {previous,direction:delta<0?'down':delta>0?'up':'same',delta,pct:Math.abs(delta)/previous*100,when};
 }
 function priceTrendMarkup(p){
  const t=priceHistoryInfo(p);
