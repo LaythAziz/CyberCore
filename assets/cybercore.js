@@ -126,3 +126,67 @@ function renderStoreProducts(storeId,el){
  const a=storeId==='all'?data.products:data.products.filter(p=>p.sourceId===storeId);
  const g=document.getElementById('storeProductGrid');if(g)g.innerHTML=a.map(card).join('');
 }
+
+
+/* ========================================================================
+   LIVE PUBLIC CATALOG SNAPSHOT
+   GitHub Pages is static, so the scheduled GitHub Action writes the latest
+   public catalog into data/catalog/products.json. The browser loads it here.
+   ======================================================================== */
+async function loadSyncedCatalog(){
+  try{
+    const res=await fetch('data/catalog/products.json?v='+Date.now(),{cache:'no-store'});
+    if(!res.ok) throw new Error('catalog HTTP '+res.status);
+    const payload=await res.json();
+    const incoming=(payload.products||[]).map(p=>({
+      id:'sync-'+p.storeId+'-'+p.id,
+      sourceId:p.storeId,
+      cat:p.category||'ACCESSORY',
+      name:p.name||'منتج بدون اسم',
+      brand:p.brand||'',
+      price:Number(p.priceIqd)||0,
+      img:p.imageUrl||'',
+      url:p.productUrl||'',
+      store:(catalogStores.find(s=>s.id===p.storeId)||{}).name||p.storeId,
+      spec:p.spec||'',
+      model:p.model||'',
+      availability:p.availability||'unknown',
+      lastCheckedAt:p.lastCheckedAt||payload.generatedAt
+    })).filter(p=>p.url);
+
+    const existingByUrl=new Map(data.products.filter(p=>p.url).map(p=>[p.url,p]));
+    incoming.forEach(p=>{
+      const old=existingByUrl.get(p.url);
+      if(old){
+        Object.assign(old,p);
+      }else{
+        data.products.push(p);
+      }
+    });
+
+    window.CYBERCORE_CATALOG_META=payload;
+    catalogSyncStatus();
+    const status=document.querySelector('#catalogSyncStatus');
+    if(status){
+      const ok=(payload.count||incoming.length);
+      status.innerHTML='<span class="syncDot"></span><b>مزامنة حقيقية</b><span>'+ok.toLocaleString('ar-IQ')+' منتج عام من المصادر • آخر تحديث '+new Date(payload.generatedAt).toLocaleString('ar-IQ')+'</span>';
+    }
+
+    renderHomeDeals?.();
+    renderDeals?.();
+    renderSearch?.();
+    renderStores?.();
+  }catch(err){
+    console.warn('[CyberCore Catalog] snapshot unavailable:',err);
+    const status=document.querySelector('#catalogSyncStatus');
+    if(status){
+      status.innerHTML='<span class="syncDot" style="background:var(--yellow)"></span><b>وضع الكتالوج المحلي</b><span>تعذر تحميل آخر snapshot؛ البيانات الأساسية ما زالت تعمل.</span>';
+    }
+  }
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(loadSyncedCatalog,120),{once:true});
+}else{
+  setTimeout(loadSyncedCatalog,120);
+}
