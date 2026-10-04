@@ -179,10 +179,43 @@ all_products=list(dedup.values())
 
 os.makedirs("data/catalog",exist_ok=True)
 now=datetime.now(timezone.utc).isoformat()
+
+# Preserve a small, transparent price history from previous sync snapshots.
+# Only observed source prices are stored; zero/unknown prices are never invented.
+history_path="data/catalog/price-history.json"
+try:
+    with open(history_path,"r",encoding="utf-8") as f:
+        previous_history=json.load(f)
+except Exception:
+    previous_history={}
+
+try:
+    with open("data/catalog/products.json","r",encoding="utf-8") as f:
+        previous_catalog=json.load(f)
+        previous_products=previous_catalog.get("products",[])
+except Exception:
+    previous_products=[]
+
+previous_by_id={p.get("id"):p for p in previous_products if p.get("id")}
+for p in all_products:
+    pid=p.get("id")
+    old=previous_by_id.get(pid,{})
+    hist=list(previous_history.get(pid,old.get("priceHistory",[])) or [])
+    current=int(p.get("priceIqd") or 0)
+    if current>0:
+        last=hist[-1].get("priceIqd") if hist else None
+        if last!=current:
+            hist.append({"priceIqd":current,"checkedAt":p.get("lastCheckedAt") or now})
+    # Keep the last 24 observed changes per source product.
+    p["priceHistory"]=hist[-24:]
+
+with open("data/catalog/price-history.json","w",encoding="utf-8") as f:
+    json.dump({p.get("id"):p.get("priceHistory",[]) for p in all_products if p.get("id")},f,ensure_ascii=False,indent=2)
+
 with open("data/catalog/products.json","w",encoding="utf-8") as f:
-    json.dump({"version":2,"generatedAt":now,"count":len(all_products),"products":all_products},f,ensure_ascii=False,indent=2)
+    json.dump({"version":3,"generatedAt":now,"count":len(all_products),"products":all_products},f,ensure_ascii=False,indent=2)
 with open("data/catalog-sync-status.json","w",encoding="utf-8") as f:
-    json.dump({"version":2,"generatedAt":now,"mode":"live-public-catalog","count":len(all_products),"stores":status,
+    json.dump({"version":3,"generatedAt":now,"mode":"live-public-catalog","count":len(all_products),"stores":status,
                "rules":{"publicSourcesOnly":True,"neverInventPrice":True,"neverInventImage":True,"exactProductUrl":True}},f,ensure_ascii=False,indent=2)
 print(json.dumps({"count":len(all_products),"stores":status},ensure_ascii=False,indent=2))
 
