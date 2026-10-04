@@ -77,7 +77,7 @@ function toast(t){const e=document.getElementById('toast');e.textContent=t;e.cla
 function openModal(id){document.getElementById(id).classList.add('show');if(id==='accountModal')renderAccount()}
 function closeModal(id){document.getElementById(id).classList.remove('show')}
 function go(id){location.hash=id}
-function route(){let id=location.hash.slice(1)||'home';if(!document.getElementById(id))id='home';state.page=id;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));window.scrollTo({top:0,behavior:'smooth'});if(id==='home')renderHome();if(id==='search')renderSearch();if(id==='deals')renderDeals();if(id==='builder')renderBuilder();if(id==='used')renderUsed();if(id==='reviews')renderReviews();if(id==='admin')renderAdmin();if(id==='stores')renderStores()}
+function route(){let id=location.hash.slice(1)||'home';if(!document.getElementById(id))id='home';state.page=id;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));window.scrollTo({top:0,behavior:'smooth'});if(id==='home')renderHome();if(id==='search')renderSearch();if(id==='deals')renderDeals();if(id==='builder')renderBuilder();if(id==='used')renderUsed();if(id==='reviews')renderReviews();if(id==='admin')renderAdmin();if(id==='stores'){renderStores();catalogSyncStatus()}}
 window.addEventListener('hashchange',route);document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('.zone').forEach(b=>b.onclick=()=>selectPart(b.dataset.part));
 function renderHome(){document.getElementById('homeDeals').innerHTML=data.products.filter(p=>p.price>0).sort((a,b)=>a.price-b.price).slice(0,8).map(card).join('')}
 function card(p){const visual=p.img?`<img src="${p.img}" alt="${esc(p.name)}" loading="lazy">`:`<div style="color:var(--cyan);font-weight:900;font-size:12px;text-align:center;padding:30px">صورة المتجر<br><small style="color:var(--muted)">افتح المصدر الأصلي</small></div>`;return `<article class="productCard"><div class="imgWrap">${visual}</div><div><span class="tag">${esc(p.cat)}</span><span class="tag">${esc(p.store)}</span></div><h3>${esc(p.name)}</h3><div class="meta">${esc(p.spec)}</div><div class="cardFooter"><div><div class="price">${p.price?money(p.price):'السعر عند المصدر'}</div><div class="meta">${p.img?"صورة مصدرية":"صورة غير مفهرسة — افتح المصدر"}</div></div><button class="btn primary" onclick="openProduct('${p.id}')">التفاصيل</button></div></article>`}
@@ -109,6 +109,10 @@ function renderAdmin(){adminTab(state.admin,document.querySelector('.adminNav bu
 function exportLocal(){const blob=new Blob([JSON.stringify({used:loadUsed(),reviews:loadReviews()},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cybercore-local-backup.json';a.click();URL.revokeObjectURL(a.href)}
 route();
 
+function catalogSyncStatus(){
+ const n=document.querySelector('#catalogSyncStatus');if(!n)return;
+ n.innerHTML='<span class="syncDot"></span><b>محرك مزامنة الكتالوجات</b><span>مهيأ للمزامنة الدورية • لا يتم اختلاق سعر أو صورة</span>';
+}
 function renderStores(){
  const root=document.getElementById('storeDirectory'); if(!root)return;
  const count=data.products.length;
