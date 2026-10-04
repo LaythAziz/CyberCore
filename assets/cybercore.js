@@ -172,10 +172,10 @@ async function loadSyncedCatalog(){
       status.innerHTML='<span class="syncDot"></span><b>مزامنة حقيقية</b><span>'+ok.toLocaleString('ar-IQ')+' منتج عام من المصادر • آخر تحديث '+new Date(payload.generatedAt).toLocaleString('ar-IQ')+'</span>';
     }
 
-    renderHomeDeals?.();
-    renderDeals?.();
-    renderSearch?.();
-    renderStores?.();
+    if(typeof renderHomeDeals==='function') renderHomeDeals();
+    if(typeof renderDeals==='function') renderDeals();
+    if(typeof renderSearch==='function') renderSearch();
+    if(typeof renderStores==='function') renderStores();
   }catch(err){
     console.warn('[CyberCore Catalog] snapshot unavailable:',err);
     const status=document.querySelector('#catalogSyncStatus');
