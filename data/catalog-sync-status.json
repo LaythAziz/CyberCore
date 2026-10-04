@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-10-04T13:09:56.270013+00:00",
+  "generatedAt": "2026-10-04T22:15:56.780437+00:00",
   "mode": "live-public-catalog",
   "count": 0,
   "stores": [
@@ -10,7 +10,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 41.8
+      "seconds": 46.3
     },
     {
       "id": "zaytoona",
@@ -18,7 +18,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 990.1
+      "seconds": 987.9
     },
     {
       "id": "hypertech",
@@ -26,7 +26,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 98.6
+      "seconds": 93.4
     },
     {
       "id": "pcsmart",
@@ -34,7 +34,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 1.8
+      "seconds": 1.6
     },
     {
       "id": "mena",
@@ -42,7 +42,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 87.6
+      "seconds": 116.5
     },
     {
       "id": "dna",
@@ -50,7 +50,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 361.5
+      "seconds": 361.0
     },
     {
       "id": "feesha",
@@ -58,7 +58,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 669.8
+      "seconds": 656.6
     },
     {
       "id": "alkhalifa",
@@ -66,7 +66,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 1.1
+      "seconds": 1.2
     },
     {
       "id": "daralreem",
@@ -74,7 +74,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 288.2
+      "seconds": 288.0
     },
     {
       "id": "mnc",
@@ -82,7 +82,7 @@
       "status": "no-products",
       "mode": "generic",
       "products": 0,
-      "seconds": 29.9
+      "seconds": 40.2
     }
   ],
   "rules": {
