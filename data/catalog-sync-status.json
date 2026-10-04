@@ -1,0 +1,94 @@
+{
+  "version": 3,
+  "generatedAt": "2026-10-04T13:09:56.270013+00:00",
+  "mode": "live-public-catalog",
+  "count": 0,
+  "stores": [
+    {
+      "id": "global",
+      "url": "https://globaliraq.iq/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 41.8
+    },
+    {
+      "id": "zaytoona",
+      "url": "https://zaytoona.com/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 990.1
+    },
+    {
+      "id": "hypertech",
+      "url": "https://hypertechiq.com/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 98.6
+    },
+    {
+      "id": "pcsmart",
+      "url": "https://pcsmartiq.com/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 1.8
+    },
+    {
+      "id": "mena",
+      "url": "https://menairq.com/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 87.6
+    },
+    {
+      "id": "dna",
+      "url": "https://www.dna-iraq.com/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 361.5
+    },
+    {
+      "id": "feesha",
+      "url": "https://feesha.net/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 669.8
+    },
+    {
+      "id": "alkhalifa",
+      "url": "https://alkhalifa.shop/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 1.1
+    },
+    {
+      "id": "daralreem",
+      "url": "https://www.daralreem.store/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 288.2
+    },
+    {
+      "id": "mnc",
+      "url": "https://mnc-tech.store/",
+      "status": "no-products",
+      "mode": "generic",
+      "products": 0,
+      "seconds": 29.9
+    }
+  ],
+  "rules": {
+    "publicSourcesOnly": true,
+    "neverInventPrice": true,
+    "neverInventImage": true,
+    "exactProductUrl": true
+  }
+}
