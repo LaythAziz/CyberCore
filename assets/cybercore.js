@@ -91,9 +91,25 @@ function populateSearchBrands(){const el=document.getElementById('sfBrand');if(!
 function partsSearchInput(){clearTimeout(partsSearchTimer);partsSearchTimer=setTimeout(runPartsSearch,120)}
 function setPartsQuery(q){const i=document.getElementById('partsQuery');if(i){i.value=q;runPartsSearch();i.focus()}}
 function clearPartsSearch(){['partsQuery','sfCat','sfBrand','sfRam','sfPrice','sfSort'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});const sort=document.getElementById('sfSort');if(sort)sort.value='relevance';runPartsSearch()}
-function offerKey(p){return searchNorm([p.brand,p.model||'',p.name||''].join(' ')).replace(/\\b(oc|gaming|edition|white|black|plus|pro|max|super|ti|xt|xtx|x3d|x|gddr[0-9a-z]+|[0-9]+gb|[0-9]+g|[0-9]+hz|wifi|wi fi)\\b/g,' ').replace(/\\s+/g,' ').trim()}
-function canonicalOfferName(p){return (p.name||'').replace(/\\b(oc|gaming|edition|white|black|plus|pro|max|super|ti|xtx|xt|x3d|wifi|wi[- ]?fi)\\b/gi,'').replace(/\\s+/g,' ').trim()}
-function groupSearchOffers(arr){const groups=new Map();arr.forEach(p=>{const key=offerKey(p)||searchNorm(p.name||p.id);if(!groups.has(key))groups.set(key,{key,name:canonicalOfferName(p)||p.name,brand:p.brand||'',cat:p.cat||'',offers:[]});groups.get(key).offers.push(p)});return [...groups.values()].map(g=>{g.offers.sort((a,b)=>(a.price>0?a.price:Infinity)-(b.price>0?b.price:Infinity));g.minPrice=g.offers[0]?.price||0;g.storeCount=new Set(g.offers.map(x=>x.store||x.sourceId).filter(Boolean)).size;return g}).sort((a,b)=>(a.minPrice||Infinity)-(b.minPrice||Infinity))}
+function normalizeProductIdentity(p){
+ const raw=searchNorm([p.brand||'',p.model||'',p.name||'',p.spec||''].join(' '));
+ const tokens=raw.split(/\\s+/).filter(Boolean);
+ const gpu=raw.match(/(?:rtx|gtx)\\s*(?:20|30|40|50)?\\s*(?:[0-9]{3,4})(?:\\s*ti)?(?:\\s*super)?(?:\\s*(?:xt|xtx))?/);
+ const vram=raw.match(/(?:8|12|16|20|24|32)\\s*(?:gb|g)/);
+ const cpu=raw.match(/(?:ryzen\\s*[3579]|core\\s*(?:i[3579]|ultra\\s*[3579]))\\s*[0-9]{4,5}(?:x3d|x|xt)?/);
+ const board=raw.match(/\\b(?:b|x|z|h)[0-9]{3}(?:e|plus|wifi|ax)?\\b/);
+ const ram=raw.match(/(?:ddr[345]|gddr[4567])/);
+ const storage=raw.match(/(?:[0-9]+\\.?[0-9]*)\\s*(?:tb|gb)/);
+ const core=gpu?.[0]||cpu?.[0]||board?.[0]||tokens.filter(x=>x.length>2).slice(0,8).join(' ');
+ const variant=(gpu?.[0]||'').replace(/\\s+/g,' ').trim();
+ return [p.cat||'',searchNorm(p.brand||''),core,variant,vram?.[0]||'',ram?.[0]||'',storage?.[0]||''].join('|');
+}
+function offerKey(p){return normalizeProductIdentity(p)}
+function canonicalOfferName(p){
+ let n=(p.name||'').replace(/\\b(?:gigabyte|msi|asus|asrock|aorus|zotac|pny|palit|galax|inno3d|gainward|colorful|sapphire|powercolor|xfx)\\b/gi,'');
+ n=n.replace(/\\s+/g,' ').replace(/^[\s•\-]+|[\s•\-]+$/g,'').trim();
+ return n||p.name||'قطعة';
+}
 function runPartsSearch(){
  const q=(document.getElementById('partsQuery')||{}).value||'',cat=(document.getElementById('sfCat')||{}).value||'',brand=(document.getElementById('sfBrand')||{}).value||'',ram=(document.getElementById('sfRam')||{}).value||'',price=(document.getElementById('sfPrice')||{}).value||'',sort=(document.getElementById('sfSort')||{}).value||'relevance';
  let arr=data.products.map(p=>({...p,_score:searchScore(p,q)})).filter(p=>(!q||p._score>0)&&(!cat||p.cat===cat)&&(!brand||p.brand===brand)&&(!ram||String(p.ram||'').toUpperCase().includes(ram)||searchNorm(p.spec).includes(searchNorm(ram))));
