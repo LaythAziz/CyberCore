@@ -185,3 +185,5 @@ with open("data/catalog-sync-status.json","w",encoding="utf-8") as f:
     json.dump({"version":2,"generatedAt":now,"mode":"live-public-catalog","count":len(all_products),"stores":status,
                "rules":{"publicSourcesOnly":True,"neverInventPrice":True,"neverInventImage":True,"exactProductUrl":True}},f,ensure_ascii=False,indent=2)
 print(json.dumps({"count":len(all_products),"stores":status},ensure_ascii=False,indent=2))
+
+# Catalog sync adapter revision: 2026-10-04
