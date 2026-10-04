@@ -91,18 +91,32 @@ function populateSearchBrands(){const el=document.getElementById('sfBrand');if(!
 function partsSearchInput(){clearTimeout(partsSearchTimer);partsSearchTimer=setTimeout(runPartsSearch,120)}
 function setPartsQuery(q){const i=document.getElementById('partsQuery');if(i){i.value=q;runPartsSearch();i.focus()}}
 function clearPartsSearch(){['partsQuery','sfCat','sfBrand','sfRam','sfPrice','sfSort'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});const sort=document.getElementById('sfSort');if(sort)sort.value='relevance';runPartsSearch()}
+function extractProductIdentity(p){
+ const raw=searchNorm([p.brand||'',p.model||'',p.name||'',p.spec||''].join(' ')).replace(/[•,()\[\]_/]/g,' ');
+ const clean=v=>String(v||'').replace(/\\s+/g,' ').trim();
+ const brand=clean(p.brand);
+ const cat=String(p.cat||'').toUpperCase();
+ const id={category:cat,brand,model:'',vram:'',ddr:'',capacity:'',chipset:'',socket:'',interface:'',variant:''};
+ const gpu=raw.match(/\\b((?:rtx|gtx)\\s*(?:20|30|40|50)?\\s*[0-9]{3,4}(?:\\s*(?:ti|super))?|(?:rx|radeon)\\s*[0-9]{4,5}(?:\\s*(?:xt|xtx|gre))?)\\b/i);
+ const cpu=raw.match(/\\b((?:ryzen\\s*[3579]|core\\s*(?:i[3579]|ultra\\s*[3579]))\\s*[0-9]{4,5}(?:\\s*(?:x3d|x|xt|f|g))?)\\b/i);
+ const board=raw.match(/\\b((?:b|x|z|h|a)[0-9]{3}(?:e|plus|wifi|ax|m)?)\\b/i);
+ if(cat==='GPU'||gpu){id.model=clean(gpu?.[1]||p.model||'');}
+ else if(cat==='CPU'||cpu){id.model=clean(cpu?.[1]||p.model||'');}
+ else if(cat==='BOARD'||cat==='MOTHERBOARD'||board){id.model=clean(board?.[1]||p.model||'');}
+ else{id.model=clean(p.model||p.name||'').slice(0,90);}
+ const v=raw.match(/\\b([0-9]+(?:\\.[0-9]+)?)\\s*(gb|g)\\b/i);if(v)id.vram=v[1]+'GB';
+ const d=raw.match(/\\b(ddr[345]|gddr[4567])\\b/i);if(d)id.ddr=d[1].toUpperCase();
+ const cap=raw.match(/\\b([0-9]+(?:\\.[0-9]+)?)\\s*(tb|gb)\\b/i);if(cap)id.capacity=cap[1]+cap[2].toUpperCase();
+ const chip=raw.match(/\\b((?:b|x|z|h)[0-9]{3}(?:e|plus|wifi|ax|m)?)\\b/i);if(cat==='BOARD'||cat==='MOTHERBOARD')id.chipset=(chip?.[1]||'').toUpperCase();
+ const sock=raw.match(/\\b(am[4-6]|lga\\s*\d{4,5})\\b/i);if(sock)id.socket=sock[1].replace(/\\s+/g,'').toUpperCase();
+ const iface=raw.match(/\\b((?:pcie|pci-e)\\s*[345](?:\\.0)?|nvme|sata(?:\\s*[123])?)\\b/i);if(iface)id.interface=iface[1].replace(/\\s+/g,'').toUpperCase();
+ const varM=raw.match(/\\b(oc|gaming|trio|ventus|eagle|aorus|rog|strix|tuf|dual|nitro|pulse|hellhound|phantom|xtreme|windforce)\\b/gi);if(varM)id.variant=[...new Set(varM.map(clean))].join(' ');
+ if(cat==='RAM')id.model=clean(p.name||p.model||'').replace(new RegExp('\\\\b'+id.ddr+'\\\\b','ig'),'');
+ return id;
+}
 function normalizeProductIdentity(p){
- const raw=searchNorm([p.brand||'',p.model||'',p.name||'',p.spec||''].join(' '));
- const tokens=raw.split(/\\s+/).filter(Boolean);
- const gpu=raw.match(/(?:rtx|gtx)\\s*(?:20|30|40|50)?\\s*(?:[0-9]{3,4})(?:\\s*ti)?(?:\\s*super)?(?:\\s*(?:xt|xtx))?/);
- const vram=raw.match(/(?:8|12|16|20|24|32)\\s*(?:gb|g)/);
- const cpu=raw.match(/(?:ryzen\\s*[3579]|core\\s*(?:i[3579]|ultra\\s*[3579]))\\s*[0-9]{4,5}(?:x3d|x|xt)?/);
- const board=raw.match(/\\b(?:b|x|z|h)[0-9]{3}(?:e|plus|wifi|ax)?\\b/);
- const ram=raw.match(/(?:ddr[345]|gddr[4567])/);
- const storage=raw.match(/(?:[0-9]+\\.?[0-9]*)\\s*(?:tb|gb)/);
- const core=gpu?.[0]||cpu?.[0]||board?.[0]||tokens.filter(x=>x.length>2).slice(0,8).join(' ');
- const variant=(gpu?.[0]||'').replace(/\\s+/g,' ').trim();
- return [p.cat||'',searchNorm(p.brand||''),core,variant,vram?.[0]||'',ram?.[0]||'',storage?.[0]||''].join('|');
+ const x=extractProductIdentity(p);
+ return [x.category,searchNorm(x.brand),searchNorm(x.model),x.vram,x.ddr,x.capacity,x.chipset,x.socket,x.interface].join('|');
 }
 function offerKey(p){return normalizeProductIdentity(p)}
 function canonicalOfferName(p){
