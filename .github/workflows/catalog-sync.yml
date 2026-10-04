@@ -14,42 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build catalog snapshot
-        env:
-          STORE_SOURCES: |
-            global|https://globaliraq.iq/
-            zaytoona|https://zaytoona.com/
-            hypertech|https://hypertechiq.com/
-            pcsmart|https://pcsmartiq.com/shop/
-            mena|https://menairq.com/category/components
-            dna|https://www.dna-iraq.com/
-            feesha|https://feesha.net/
-            alkhalifa|https://alkhalifa.shop/
-            daralreem|https://www.daralreem.store/
-            mnc|https://mnc-tech.store/ar-iq/pages/pc-components
-        run: |
-          python3 - <<'PY'
-          import json, os, datetime
-          raw=os.environ["STORE_SOURCES"].strip().splitlines()
-          stores=[]
-          for line in raw:
-              sid,url=line.split("|",1)
-              stores.append({"id":sid,"url":url,"status":"source-configured"})
-          out={
-            "generatedAt":datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "mode":"source-registry",
-            "note":"Live extraction requires per-store adapters or approved APIs. This workflow intentionally does not invent prices/products.",
-            "stores":stores
-          }
-          os.makedirs("data",exist_ok=True)
-          with open("data/catalog-sync-status.json","w",encoding="utf-8") as f:
-              json.dump(out,f,ensure_ascii=False,indent=2)
-          PY
+      - name: Run live public catalog adapters
+        run: python3 scripts/catalog_sync.py
 
-      - name: Commit sync status
+      - name: Commit catalog snapshot
         run: |
           git config user.name "CyberCore Catalog Bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/catalog-sync-status.json
-          git diff --cached --quiet || git commit -m "chore: refresh catalog sync status"
+          git add data/catalog/products.json data/catalog-sync-status.json
+          git diff --cached --quiet || git commit -m "chore: sync public Iraqi store catalogs"
           git push
