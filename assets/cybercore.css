@@ -57,3 +57,9 @@ html{scroll-behavior:auto}.top{background:#02070ccc;backdrop-filter:blur(24px) s
 /* PRICE INTELLIGENCE */
 .priceIntelGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 15px}.intelCard{padding:12px;border:1px solid #1b4054;border-radius:14px;background:linear-gradient(145deg,#071b28,#06111a)}.intelCard span{display:block;color:#6f8998;font-size:8px}.intelCard b{display:block;color:#72e4ff;font-size:15px;margin-top:6px}.intelCard small{display:block;color:#728b99;font-size:8px;margin-top:4px}.priceTrend{display:block;font-size:7px;margin-top:4px;white-space:nowrap}.priceTrend.down{color:#65e3a4}.priceTrend.up{color:#ff8f9a}.priceTrend.neutral{color:#5e7786}.priceTrend small{font-size:7px;color:#7c96a4}
 @media(max-width:700px){.priceIntelGrid{grid-template-columns:1fr 1fr}.intelCard b{font-size:13px}}
+
+/* PC BUILDER PRICE INTELLIGENCE */
+.builderPriceLine{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border:1px solid rgba(70,190,255,.18);border-radius:12px;background:rgba(70,190,255,.06)}
+.builderPriceLine b{font-size:16px}.builderPriceLine span{font-size:11px;color:var(--muted)}.builderPriceLine.missing{border-color:rgba(255,190,70,.2);background:rgba(255,190,70,.05)}
+.builderOfferMini{display:grid;gap:6px;margin-top:8px}.builderOfferMini a{display:flex;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:9px;background:rgba(255,255,255,.035);color:inherit;text-decoration:none;font-size:12px}.builderOfferMini a:hover{background:rgba(70,190,255,.08)}
+.builderPriceMeta{margin:12px 0 0;padding:12px 14px;border:1px solid rgba(70,190,255,.16);border-radius:12px;color:var(--muted);font-size:13px}.builderPriceMeta b{color:var(--text)}
