@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "product": {
     "id": "stable-source-product-id",
     "storeId": "store-id",
@@ -14,7 +14,8 @@
     "productUrl": "https://...",
     "spec": "Normalized short specifications",
     "sourceUpdatedAt": null,
-    "lastCheckedAt": null
+    "lastCheckedAt": null,
+    "priceHistory": [{"priceIqd": 0, "checkedAt": "ISO-8601"}]
   },
   "rules": {
     "dedupeKey": ["brand","model"],
