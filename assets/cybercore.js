@@ -124,6 +124,57 @@ function canonicalOfferName(p){
  n=n.replace(/\\s+/g,' ').replace(/^[\s•\-]+|[\s•\-]+$/g,'').trim();
  return n||p.name||'قطعة';
 }
+function groupSearchOffers(arr){
+ const map=new Map();
+ arr.forEach(p=>{
+  const key=offerKey(p);
+  if(!map.has(key))map.set(key,{key,name:canonicalOfferName(p),cat:p.cat||'',brand:p.brand||'',offers:[]});
+  map.get(key).offers.push(p);
+ });
+ return [...map.values()].map(g=>{
+  g.offers.sort((a,b)=>{
+   if(a.price&&b.price)return a.price-b.price;
+   if(a.price)return -1;
+   if(b.price)return 1;
+   return String(a.store||'').localeCompare(String(b.store||''));
+  });
+  g.minPrice=g.offers.find(x=>Number(x.price)>0)?.price||0;
+  g.storeCount=new Set(g.offers.map(x=>x.store||x.sourceId).filter(Boolean)).size;
+  return g;
+ });
+}
+function comparisonField(label,value){
+ return '<div class="compareSpec"><span>'+esc(label)+'</span><b>'+esc(value||'—')+'</b></div>';
+}
+function openOfferComparison(encodedKey){
+ const key=decodeURIComponent(encodedKey);
+ const group=groupSearchOffers(data.products).find(g=>g.key===key);
+ if(!group)return;
+ const identity=extractProductIdentity(group.offers[0]);
+ const knownPrices=group.offers.filter(x=>Number(x.price)>0).map(x=>x.price);
+ const best=knownPrices.length?Math.min(...knownPrices):0;
+ const worst=knownPrices.length?Math.max(...knownPrices):0;
+ const diff=best&&worst?worst-best:0;
+ const rows=group.offers.map((x,i)=>{
+  const delta=best&&x.price?x.price-best:0;
+  const avail=String(x.availability||x.stock||'').trim()||'الحالة عند المصدر';
+  const checked=x.lastCheckedAt||x.sourceUpdatedAt||'غير متوفر';
+  return '<div class="comparisonOffer '+(x.price===best&&best?'best':'')+'"><div class="comparisonRank">'+(i+1)+'</div><div class="comparisonStore"><b>'+esc(x.store||x.sourceId||'المصدر')+'</b><span>'+esc(x.name||group.name)+'</span></div><div class="comparisonPrice">'+(x.price?money(x.price):'السعر عند المصدر')+(delta>0?'<small>+'+money(delta)+' عن الأرخص</small>':'<small>'+(x.price===best&&best?'أفضل سعر':'')+'</small>')+'</div><div class="comparisonAvailability">'+esc(avail)+'</div><div class="comparisonChecked">'+esc(checked)+'</div><a class="offerOpen" href="'+esc(x.url||'#')+'" target="_blank" rel="noopener">فتح العرض ↗</a></div>';
+ }).join('');
+ const specs=[
+  comparisonField('الفئة',identity.category),
+  comparisonField('الموديل',identity.model),
+  comparisonField('VRAM',identity.vram),
+  comparisonField('DDR / GDDR',identity.ddr),
+  comparisonField('السعة',identity.capacity),
+  comparisonField('Chipset',identity.chipset),
+  comparisonField('Socket',identity.socket),
+  comparisonField('Interface',identity.interface)
+ ].join('');
+ const visual=group.offers.find(x=>x.img)?.img;
+ document.getElementById('productBox').innerHTML='<div class="modalHead"><div><div class="eyebrow">PRODUCT COMPARISON • '+esc(group.cat||'PART')+'</div><h2>'+esc(group.name)+'</h2><p class="muted">مقارنة '+group.offers.length+' عروض من '+(group.storeCount||group.offers.length)+' مصادر</p></div><button class="close" onclick="closeModal(\'productModal\')">×</button></div><div class="comparisonHero">'+(visual?'<img src="'+esc(visual)+'" alt="'+esc(group.name)+'">':'<div class="sourcePlaceholder">صورة المصدر غير مفهرسة</div>')+'<div class="comparisonBest"><span>أفضل سعر معروف</span><strong>'+(best?money(best):'السعر عند المصدر')+'</strong><small>'+(diff?'فرق حتى '+money(diff):'لا توجد أسعار متعددة معروفة')+'</small></div></div><div class="comparisonSpecs">'+specs+'</div><div class="comparisonOffers"><div class="comparisonHeader"><b>العروض حسب السعر</b><span>'+(group.storeCount||group.offers.length)+' متجر • '+group.offers.length+' عرض</span></div>'+rows+'</div><p class="comparisonNote">الأسعار والمخزون تتغير. آخر تحديث يعرض وقت وصول البيانات إلى CyberCore، والمتجر هو المرجع النهائي قبل الشراء.</p>';
+ openModal('productModal');
+}
 function runPartsSearch(){
  const q=(document.getElementById('partsQuery')||{}).value||'',cat=(document.getElementById('sfCat')||{}).value||'',brand=(document.getElementById('sfBrand')||{}).value||'',ram=(document.getElementById('sfRam')||{}).value||'',price=(document.getElementById('sfPrice')||{}).value||'',sort=(document.getElementById('sfSort')||{}).value||'relevance';
  let arr=data.products.map(p=>({...p,_score:searchScore(p,q)})).filter(p=>(!q||p._score>0)&&(!cat||p.cat===cat)&&(!brand||p.brand===brand)&&(!ram||String(p.ram||'').toUpperCase().includes(ram)||searchNorm(p.spec).includes(searchNorm(ram))));
@@ -133,7 +184,7 @@ function runPartsSearch(){
  const count=document.getElementById('searchResultCount'),hint=document.getElementById('searchResultHint'),out=document.getElementById('partsResults');
  if(count)count.textContent=groups.length+' قطعة • '+arr.length+' عرض';
  if(hint)hint.textContent=q?'نتائج مجمعة حسب الموديل لـ «'+q+'»':'كل القطع مجمعة حسب الموديل';
- if(out)out.innerHTML=groups.length?groups.slice(0,80).map(g=>{const p=g.offers[0],gid='og_'+encodeURIComponent(g.key);return `<article class="offerGroup"><div class="offerGroupMain"><div class="searchCardMedia">${p.img?`<img src="${p.img}" alt="${esc(g.name)}">`:'<span>مصدر</span>'}</div><div class="offerGroupBody"><div class="searchCardTop"><span class="catBadge">${esc(g.cat||'قطعة')}</span><span class="offerCount">${g.storeCount||g.offers.length} متجر • ${g.offers.length} عرض</span></div><h3>${esc(g.name)}</h3><p>${esc(p.spec||'مواصفات المصدر')}</p><div class="searchMeta">${g.brand?`<span>${esc(g.brand)}</span>`:''}<span>${g.offers.length} عروض</span></div></div><div class="offerGroupPrice"><small>يبدأ من</small><strong>${g.minPrice?money(g.minPrice):'السعر عند المصدر'}</strong><button class="btn primary" onclick="toggleOfferGroup('${gid}')">عرض العروض</button></div></div><div id="${gid}" class="offerRows" hidden>${g.offers.map((x,i)=>`<div class="offerRow"><div class="offerRank">${i+1}</div><div><b>${esc(x.store||x.sourceId||'المصدر')}</b><span>${esc(x.name)}</span></div><strong>${x.price?money(x.price):'السعر عند المصدر'}</strong><button class="offerOpen" onclick="openProduct('${String(x.id).replace(/'/g,"\\'")}')">فتح العرض</button></div>`).join('')}</div></article>`}).join(''):`<div class="empty searchEmpty"><b>ما لقينا نتيجة مطابقة</b><span>جرّب RTX 5070 أو MSI أو B650 أو DDR5، أو امسح أحد الفلاتر.</span></div>`;
+ if(out)out.innerHTML=groups.length?groups.slice(0,80).map(g=>{const p=g.offers[0],gid='og_'+encodeURIComponent(g.key);return `<article class="offerGroup"><div class="offerGroupMain"><div class="searchCardMedia">${p.img?`<img src="${p.img}" alt="${esc(g.name)}">`:'<span>مصدر</span>'}</div><div class="offerGroupBody"><div class="searchCardTop"><span class="catBadge">${esc(g.cat||'قطعة')}</span><span class="offerCount">${g.storeCount||g.offers.length} متجر • ${g.offers.length} عرض</span></div><h3>${esc(g.name)}</h3><p>${esc(p.spec||'مواصفات المصدر')}</p><div class="searchMeta">${g.brand?`<span>${esc(g.brand)}</span>`:''}<span>${g.offers.length} عروض</span></div></div><div class="offerGroupPrice"><small>يبدأ من</small><strong>${g.minPrice?money(g.minPrice):'السعر عند المصدر'}</strong><button class="btn primary" onclick="toggleOfferGroup('${gid}')">عرض العروض</button><button class="btn" onclick="openOfferComparison('${encodeURIComponent(g.key)}')">مقارنة كاملة</button></div></div><div id="${gid}" class="offerRows" hidden>${g.offers.map((x,i)=>`<div class="offerRow"><div class="offerRank">${i+1}</div><div><b>${esc(x.store||x.sourceId||'المصدر')}</b><span>${esc(x.name)}</span></div><strong>${x.price?money(x.price):'السعر عند المصدر'}</strong><button class="offerOpen" onclick="openProduct('${String(x.id).replace(/'/g,"\\'")}')">فتح العرض</button></div>`).join('')}</div></article>`}).join(''):`<div class="empty searchEmpty"><b>ما لقينا نتيجة مطابقة</b><span>جرّب RTX 5070 أو MSI أو B650 أو DDR5، أو امسح أحد الفلاتر.</span></div>`;
 }
 function toggleOfferGroup(id){const e=document.getElementById(id);if(!e)return;e.hidden=!e.hidden;const b=e.parentElement.querySelector('.offerGroupPrice button');if(b)b.textContent=e.hidden?'عرض العروض':'إخفاء العروض'}
 function renderSearch(){populateSearchBrands();runPartsSearch()}
