@@ -212,6 +212,28 @@ function priceTrendMarkup(p){
  const cls=t.direction==='down'?'down':'up';
  return '<span class="priceTrend '+cls+'">'+label+' '+t.pct.toFixed(1)+'% عن آخر سعر معروف <small>('+money(t.previous)+')</small></span>';
 }
+function formatComparisonDate(v){
+ const d=v?new Date(v):null;
+ if(!d||Number.isNaN(d.getTime()))return 'غير مسجل';
+ return d.toLocaleString('ar-IQ',{dateStyle:'medium',timeStyle:'short'});
+}
+function priceHistorySeries(group){
+ const rows=[];
+ group.offers.forEach(p=>{
+  (Array.isArray(p.priceHistory)?p.priceHistory:[]).forEach(h=>{
+   const price=Number(h?.priceIqd||h?.price||0),at=h?.checkedAt||h?.date||h?.timestamp;
+   if(price>0&&at)rows.push({price,at,store:p.store||p.sourceId||'المصدر'});
+  });
+ });
+ rows.sort((a,b)=>new Date(a.at)-new Date(b.at));
+ if(!rows.length)return '<div class="priceHistoryEmpty"><div class="historyIcon">⌁</div><div><b>Price History غير متوفر بعد</b><span>CyberCore لن يخترع تاريخاً. سيظهر الرسم تلقائياً عندما تتوفر نقاط أسعار محفوظة من المصدر.</span></div></div>';
+ const min=Math.min(...rows.map(x=>x.price)),max=Math.max(...rows.map(x=>x.price)),range=Math.max(1,max-min);
+ const bars=rows.slice(-18).map((x,i)=>{
+  const h=28+((x.price-min)/range)*72;
+  return '<div class="historyBarWrap" title="'+esc(x.store+' • '+formatComparisonDate(x.at)+' • '+money(x.price))+'"><span class="historyValue">'+money(x.price)+'</span><i class="historyBar" style="height:'+h.toFixed(1)+'%"></i><small>'+esc(new Date(x.at).toLocaleDateString('ar-IQ',{month:'short',day:'numeric'}))+'</small></div>';
+ }).join('');
+ return '<div class="priceHistoryChart"><div class="historyChartHead"><div><b>Price History</b><span>آخر '+Math.min(rows.length,18)+' نقطة موثوقة</span></div><strong>'+money(rows[rows.length-1].price)+'</strong></div><div class="historyBars">'+bars+'</div></div>';
+}
 function openOfferComparison(encodedKey){
  const key=decodeURIComponent(encodedKey);
  const group=groupSearchOffers(data.products).find(g=>g.key===key);
@@ -225,11 +247,26 @@ function openOfferComparison(encodedKey){
  const diff=best&&worst?worst-best:0;
  const spreadPct=best&&worst?diff/best*100:0;
  const storeCount=new Set(group.offers.map(x=>x.store||x.sourceId).filter(Boolean)).size;
- const rows=group.offers.map((x,i)=>{
+ const availabilityCounts={available:0,unavailable:0,unknown:0};
+ group.offers.forEach(x=>{
+  const a=String(x.availability||x.stock||'').toLowerCase();
+  if(/available|in stock|متوفر|متاح/.test(a))availabilityCounts.available++;
+  else if(/out|unavailable|غير متوفر|نفد/.test(a))availabilityCounts.unavailable++;
+  else availabilityCounts.unknown++;
+ });
+ const checkedDates=group.offers.map(x=>x.lastCheckedAt||x.sourceUpdatedAt).filter(Boolean).map(v=>new Date(v)).filter(d=>!Number.isNaN(d.getTime()));
+ const latestChecked=checkedDates.length?new Date(Math.max(...checkedDates.map(d=>d.getTime()))):null;
+ const bestOffer=group.offers.find(x=>Number(x.price)===best&&best);
+ const rows=group.offers.slice().sort((a,b)=>{
+  const ap=Number(a.price||0),bp=Number(b.price||0);
+  if(ap&&bp)return ap-bp;
+  if(ap)return -1;if(bp)return 1;return 0;
+ }).map((x,i)=>{
   const delta=best&&x.price?Number(x.price)-best:0;
   const avail=String(x.availability||x.stock||'').trim()||'الحالة عند المصدر';
-  const checked=x.lastCheckedAt||x.sourceUpdatedAt||'غير متوفر';
-  return '<div class="comparisonOffer '+(Number(x.price)===best&&best?'best':'')+'"><div class="comparisonRank">'+(i+1)+'</div><div class="comparisonStore"><b>'+esc(x.store||x.sourceId||'المصدر')+'</b><span>'+esc(x.name||group.name)+'</span></div><div class="comparisonPrice">'+(x.price?money(x.price):'السعر عند المصدر')+(delta>0?'<small>+'+money(delta)+' عن الأرخص</small>':'<small>'+(Number(x.price)===best&&best?'أفضل سعر':'')+'</small>')+priceTrendMarkup(x)+'</div><div class="comparisonAvailability">'+esc(avail)+'</div><div class="comparisonChecked">'+esc(checked)+'</div><a class="offerOpen" href="'+esc(x.url||'#')+'" target="_blank" rel="noopener">فتح العرض ↗</a></div>';
+  const checked=x.lastCheckedAt||x.sourceUpdatedAt;
+  const link=x.url?'<a class="offerOpen" href="'+esc(x.url)+'" target="_blank" rel="noopener">فتح متجر المصدر ↗</a>':'<span class="offerUnavailableLink">رابط المصدر غير متوفر</span>';
+  return '<div class="comparisonOffer '+(Number(x.price)===best&&best?'best':'')+'"><div class="comparisonRank">'+(i+1)+'</div><div class="comparisonStore"><b>'+esc(x.store||x.sourceId||'المصدر')+'</b><span>'+esc(x.name||group.name)+'</span></div><div class="comparisonPrice">'+(x.price?money(x.price):'السعر عند المصدر')+(delta>0?'<small>+'+money(delta)+' عن الأرخص</small>':'<small>'+(Number(x.price)===best&&best?'أفضل سعر':'')+'</small>')+priceTrendMarkup(x)+'</div><div class="comparisonAvailability">'+esc(avail)+'</div><div class="comparisonChecked">'+esc(checked?formatComparisonDate(checked):'غير مسجل')+'</div>'+link+'</div>';
  }).join('');
  const specs=[
   comparisonField('الفئة',identity.category),
@@ -242,7 +279,9 @@ function openOfferComparison(encodedKey){
   comparisonField('Interface',identity.interface)
  ].join('');
  const visual=group.offers.find(x=>x.img)?.img;
- document.getElementById('productBox').innerHTML='<div class="modalHead"><div><div class="eyebrow">PRICE INTELLIGENCE • '+esc(group.cat||'PART')+'</div><h2>'+esc(group.name)+'</h2><p class="muted">مقارنة '+group.offers.length+' عروض من '+storeCount+' متاجر</p></div><button class="close" onclick="closeModal(\'productModal\')">×</button></div><div class="comparisonHero">'+(visual?'<img src="'+esc(visual)+'" alt="'+esc(group.name)+'">':'<div class="sourcePlaceholder">صورة المصدر غير مفهرسة</div>')+'<div class="comparisonBest"><span>أفضل سعر معروف</span><strong>'+(best?money(best):'السعر عند المصدر')+'</strong><small>'+(average?'متوسط السوق: '+money(Math.round(average)):'لا توجد أسعار معروفة')+'</small><small>'+(diff?'فرق الأرخص/الأغلى: '+money(diff)+' • '+spreadPct.toFixed(1)+'%':'لا يوجد فرق محسوب')+'</small></div></div><div class="priceIntelGrid"><div class="intelCard"><span>الأرخص</span><b>'+(best?money(best):'—')+'</b></div><div class="intelCard"><span>متوسط الأسعار</span><b>'+(average?money(Math.round(average)):'—')+'</b></div><div class="intelCard"><span>فرق السعر</span><b>'+(diff?money(diff):'—')+'</b><small>'+(spreadPct?spreadPct.toFixed(1)+'% فوق الأرخص':'—')+'</small></div><div class="intelCard"><span>عدد المتاجر</span><b>'+storeCount+'</b><small>'+group.offers.length+' عروض</small></div></div><div class="comparisonSpecs">'+specs+'</div><div class="comparisonOffers"><div class="comparisonHeader"><b>العروض حسب السعر</b><span>الأرخص أولاً • '+storeCount+' متجر</span></div>'+rows+'</div><p class="comparisonNote">Price Intelligence يعتمد فقط على أسعار رصدتها CyberCore من المصادر. اتجاه السعر يظهر فقط عندما يوجد سعر سابق مختلف محفوظ في سجل المصدر؛ لا نخمن تاريخاً غير موجود.</p>';
+ const bestLink=bestOffer?.url?'<a class="btn primary comparisonBuy" href="'+esc(bestOffer.url)+'" target="_blank" rel="noopener">اشترِ من الأرخص ↗</a>':'<span class="comparisonNoLink">رابط الأرخص غير متوفر</span>';
+ const availability=availabilityCounts.available?availabilityCounts.available+' متوفر':'لا يوجد توفر مؤكد';
+ document.getElementById('productBox').innerHTML='<div class="comparisonShell"><div class="modalHead"><div><div class="eyebrow">PRICE INTELLIGENCE • '+esc(group.cat||'PART')+'</div><h2>'+esc(group.name)+'</h2><p class="muted">مقارنة '+group.offers.length+' عروض من '+storeCount+' متاجر</p></div><button class="close" onclick="closeModal(\'productModal\')">×</button></div><div class="comparisonHero"><div class="comparisonProductVisual">'+(visual?'<img src="'+esc(visual)+'" alt="'+esc(group.name)+'">':'<div class="sourcePlaceholder">صورة المصدر غير مفهرسة</div>')+'<span class="visualScan"></span></div><div class="comparisonBest"><span class="bestKicker">BEST VERIFIED OFFER</span><strong>'+(best?money(best):'السعر عند المصدر')+'</strong><small>'+(bestOffer?'من '+esc(bestOffer.store||bestOffer.sourceId||'المصدر'):'لا يوجد عرض مسعّر')+'</small><div class="comparisonBestMeta"><span>التوفر</span><b>'+esc(availability)+'</b></div>'+bestLink+'</div></div><div class="priceIntelGrid"><div class="intelCard"><span>الأرخص</span><b>'+(best?money(best):'—')+'</b><small>'+(bestOffer?esc(bestOffer.store||bestOffer.sourceId||'المصدر'):'لا يوجد')+'</small></div><div class="intelCard"><span>متوسط الأسعار</span><b>'+(average?money(Math.round(average)):'—')+'</b><small>من الأسعار المسجلة فقط</small></div><div class="intelCard"><span>فرق الأرخص/الأغلى</span><b>'+(diff?money(diff):'—')+'</b><small>'+(spreadPct?spreadPct.toFixed(1)+'% فوق الأرخص':'—')+'</small></div><div class="intelCard"><span>آخر تحديث</span><b>'+esc(latestChecked?formatComparisonDate(latestChecked):'غير مسجل')+'</b><small>'+storeCount+' متاجر • '+group.offers.length+' عروض</small></div></div><div class="comparisonSpecs">'+specs+'</div><div class="comparisonOffers"><div class="comparisonHeader"><b>العروض حسب السعر</b><span>الأرخص أولاً • التوفر والتحديث من المصدر</span></div>'+rows+'</div><section class="priceHistorySection"><div class="priceHistorySectionHead"><div><h3>Price History</h3><p>تاريخ السعر المحفوظ لكل عرض، بدون تخمين.</p></div><span class="historyStatus">'+(priceHistorySeries(group).includes('priceHistoryEmpty')?'NO HISTORY':'TRACKING')+'</span></div>'+priceHistorySeries(group)+'</section><p class="comparisonNote">Price Intelligence يعتمد فقط على بيانات عروض CyberCore. متوسط السعر لا يشمل العروض بلا سعر، و«آخر تحديث» يظهر فقط عندما يرسل المصدر وقت رصد فعلي. زر المتجر يفتح صفحة العرض الأصلية مباشرة.</p></div>';
  openModal('productModal');
 }
 function resetBuild(){state.build={};renderBuilder();toast('تمت إعادة التجميعة')}
