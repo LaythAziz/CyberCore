@@ -404,7 +404,9 @@ async function loadSyncedCatalog(){
       spec:p.spec||'',
       model:p.model||'',
       availability:p.availability||'unknown',
-      lastCheckedAt:p.lastCheckedAt||payload.generatedAt
+      lastCheckedAt:p.lastCheckedAt||payload.generatedAt,
+      priceHistory:Array.isArray(p.priceHistory)?p.priceHistory:[],
+      sourceUpdatedAt:p.sourceUpdatedAt||null
     })).filter(p=>p.url);
 
     const existingByUrl=new Map(data.products.filter(p=>p.url).map(p=>[p.url,p]));

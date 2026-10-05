@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import json, os, re, html, hashlib, time
-from datetime import datetime, timezone
+import json, os, re, html, hashlib, time\nfrom datetime import datetime, timezone\nfrom scripts.price_history import append_price_observation
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 from xml.etree import ElementTree as ET
@@ -185,7 +184,7 @@ now=datetime.now(timezone.utc).isoformat()
 history_path="data/catalog/price-history.json"
 try:
     with open(history_path,"r",encoding="utf-8") as f:
-        previous_history=json.load(f)
+        previous_history=json.load(f)\n        if isinstance(previous_history.get("products"), dict):\n            previous_history=previous_history["products"]
 except Exception:
     previous_history={}
 
@@ -201,16 +200,15 @@ for p in all_products:
     pid=p.get("id")
     old=previous_by_id.get(pid,{})
     hist=list(previous_history.get(pid,old.get("priceHistory",[])) or [])
-    current=int(p.get("priceIqd") or 0)
-    if current>0:
-        last=hist[-1].get("priceIqd") if hist else None
-        if last!=current:
-            hist.append({"priceIqd":current,"checkedAt":p.get("lastCheckedAt") or now})
-    # Keep the last 24 observed changes per source product.
-    p["priceHistory"]=hist[-24:]
+    p["priceHistory"]=append_price_observation(
+        hist,
+        int(p.get("priceIqd") or 0),
+        p.get("lastCheckedAt") or now,
+        limit=24,
+    )
 
 with open("data/catalog/price-history.json","w",encoding="utf-8") as f:
-    json.dump({p.get("id"):p.get("priceHistory",[]) for p in all_products if p.get("id")},f,ensure_ascii=False,indent=2)
+    json.dump({"version":1,"generatedAt":now,"products":{p.get("id"):p.get("priceHistory",[]) for p in all_products if p.get("id")}},f,ensure_ascii=False,indent=2)
 
 with open("data/catalog/products.json","w",encoding="utf-8") as f:
     json.dump({"version":3,"generatedAt":now,"count":len(all_products),"products":all_products},f,ensure_ascii=False,indent=2)
