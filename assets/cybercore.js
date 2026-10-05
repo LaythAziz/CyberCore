@@ -91,6 +91,52 @@ function populateSearchBrands(){const el=document.getElementById('sfBrand');if(!
 function partsSearchInput(){clearTimeout(partsSearchTimer);partsSearchTimer=setTimeout(runPartsSearch,120)}
 function setPartsQuery(q){const i=document.getElementById('partsQuery');if(i){i.value=q;runPartsSearch();i.focus()}}
 function clearPartsSearch(){['partsQuery','sfCat','sfBrand','sfRam','sfPrice','sfSort'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});const sort=document.getElementById('sfSort');if(sort)sort.value='relevance';runPartsSearch()}
+function runPartsSearch(){
+  const q=(document.getElementById('partsQuery')?.value||'').trim();
+  const cat=document.getElementById('sfCat')?.value||'';
+  const brand=document.getElementById('sfBrand')?.value||'';
+  const ram=document.getElementById('sfRam')?.value||'';
+  const price=document.getElementById('sfPrice')?.value||'';
+  const sort=document.getElementById('sfSort')?.value||'relevance';
+  populateSearchBrands();
+
+  let rows=data.products.filter(p=>{
+    const pc=String(p.cat||'').toUpperCase();
+    if(cat && pc!==cat) return false;
+    if(brand && searchNorm(p.brand)!==searchNorm(brand)) return false;
+    if(ram && !searchNorm([p.ram,p.spec,p.name].join(' ')).includes(searchNorm(ram))) return false;
+    if(price){
+      const [lo,hi]=price.split('-').map(Number),v=Number(p.price||0);
+      if(!v || v<lo || v>hi) return false;
+    }
+    return !q || searchScore(p,q)>0;
+  });
+
+  const groups=groupSearchOffers(rows).filter(g=>!q || g.offers.some(p=>searchScore(p,q)>0));
+  if(sort==='priceAsc') groups.sort((a,b)=>(a.minPrice||Infinity)-(b.minPrice||Infinity));
+  else if(sort==='priceDesc') groups.sort((a,b)=>(b.minPrice||0)-(a.minPrice||0));
+  else if(sort==='name') groups.sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+  else groups.sort((a,b)=>{
+    const sa=Math.max(...a.offers.map(p=>searchScore(p,q))), sb=Math.max(...b.offers.map(p=>searchScore(p,q)));
+    return sb-sa || (a.minPrice||Infinity)-(b.minPrice||Infinity);
+  });
+
+  const count=document.getElementById('searchResultCount');
+  const hint=document.getElementById('searchResultHint');
+  const root=document.getElementById('partsResults');
+  if(!root)return;
+  if(count)count.textContent=q ? groups.length.toLocaleString('ar-IQ')+' قطعة مطابقة' : groups.length.toLocaleString('ar-IQ')+' منتجات';
+  if(hint)hint.textContent=q?'كل موديل يظهر مرة واحدة، والعروض مرتبة من الأرخص إلى الأغلى.':'اكتب اسم القطعة حتى نجمع عروض نفس المنتج من المصادر.';
+
+  root.innerHTML=groups.length ? groups.slice(0,80).map((g,index)=>{
+    const best=g.minPrice;
+    const visual=g.offers.find(p=>p.img)?.img;
+    const key=encodeURIComponent(g.key);
+    const offers=g.offers.slice(0,4).map(p=>'<div class="searchOfferRow '+(Number(p.price)===best&&best?'best':'')+'"><div><b>'+esc(p.store||p.sourceId||'المصدر')+'</b><small>'+esc(p.availability||p.stock||'الحالة عند المصدر')+'</small></div><strong>'+(p.price?money(p.price):'السعر عند المصدر')+'</strong></div>').join('');
+    return '<article class="searchProductGroup" style="--i:'+index+'"><div class="searchProductVisual">'+(visual?'<img src="'+esc(visual)+'" loading="lazy" alt="'+esc(g.name)+'">':'<span>CYBER<br>CORE</span>')+'</div><div class="searchProductMain"><div class="searchProductTop"><span class="tag">'+esc(g.cat||'PART')+'</span><span class="tag">'+esc(g.brand||'')+'</span><span class="storeCountTag">'+g.storeCount+' متجر</span></div><h3>'+esc(g.name)+'</h3><p>'+esc(g.offers[0]?.spec||'مقارنة مواصفات وعروض هذا الموديل')+'</p><div class="searchOffers">'+offers+'</div></div><div class="searchProductSide"><span>من</span><b>'+(best?money(best):'السعر عند المصدر')+'</b><small>'+g.offers.length+' عروض</small><button class="btn primary" onclick="openOfferComparison(\''+key+'\')">مقارنة العروض ↗</button></div></article>';
+  }).join('') : '<div class="empty searchEmpty"><b>ما حصلنا نتيجة مؤكدة.</b><span>جرّب اسم موديل أدق مثل RTX 5070 أو H610 أو B650.</span></div>';
+}
+
 function extractProductIdentity(p){
  const raw=searchNorm([p.brand||'',p.model||'',p.name||'',p.spec||''].join(' ')).replace(/[•,()\[\]_/]/g,' ');
  const clean=v=>String(v||'').replace(/\\s+/g,' ').trim();
@@ -201,7 +247,27 @@ function openOfferComparison(encodedKey){
 }
 function resetBuild(){state.build={};renderBuilder();toast('تمت إعادة التجميعة')}
 const buildSlots=[['CPU','المعالج',['cpu7800']],['BOARD','اللوحة الأم',['boardB650']],['GPU','كرت الشاشة',['gpu4070','gpu5070']],['RAM','الرامات',['ramTforce']],['SSD','التخزين',['ssdWd']]];
-function builderOffersFor(id){const s=data.products.find(p=>p.id===id);if(!s)return [];const t=searchNorm([s.brand,s.name,s.model].join(' ')).split(' ').filter(x=>x.length>=3);return data.products.filter(p=>Number(p.price)>0&&p.url&&p.sourceType!=='catalog'&&String(p.cat||'').toUpperCase()===String(s.cat||'').toUpperCase()).map(p=>{const h=searchNorm([p.brand,p.name,p.model,p.spec].join(' '));let score=0;t.forEach(x=>{if(h.includes(x))score+=x.length>=5?2:1});if(s.brand&&searchNorm(p.brand)===searchNorm(s.brand))score+=3;return {p,score}}).filter(x=>x.score>=Math.max(3,t.length)).sort((a,b)=>a.p.price-b.p.price).map(x=>x.p)}
+function builderSourceProduct(id){
+  const m=String(id||'').match(/^bc_(.+)_(\\d+)$/); if(!m)return null;
+  const cat=m[1].toUpperCase(),i=Number(m[2]),item=window.builderCatalog?.[cat]?.[i];
+  if(!item)return null;
+  return {id,cat,brand:item[0],name:item[1],model:item[1],socket:item[2]||'',ram:item[3]||'',spec:item.slice(2).join(' • ')};
+}
+function builderOffersFor(id){
+  const s=data.products.find(p=>p.id===id)||builderSourceProduct(id); if(!s)return [];
+  const target=extractProductIdentity(s);
+  return data.products.filter(p=>Number(p.price)>0&&p.url&&p.sourceType!=='catalog'&&String(p.cat||'').toUpperCase()===String(s.cat||'').toUpperCase())
+    .map(p=>({p,score:searchScore(p,[s.brand,s.name].join(' '))+(
+      searchNorm(p.brand)===searchNorm(s.brand)?35:0
+    )}))
+    .filter(x=>{
+      const id2=extractProductIdentity(x.p);
+      const modelOk=target.model && id2.model && searchNorm(id2.model)===searchNorm(target.model);
+      const socketOk=!target.socket||!x.p.socket||searchNorm(target.socket)===searchNorm(x.p.socket);
+      const ramOk=!target.ram||!x.p.ram||searchNorm(target.ram).includes(searchNorm(x.p.ram))||searchNorm(x.p.ram).includes(searchNorm(target.ram));
+      return modelOk&&socketOk&&ramOk;
+    }).sort((a,b)=>a.p.price-b.p.price).map(x=>x.p);
+}
 function builderBestOffer(id){const o=builderOffersFor(id);return {offers:o,best:o.length?Number(o[0].price):0}}
 function renderBuilder(){const labels={CPU:'المعالج',BOARD:'اللوحة الأم',GPU:'كرت الشاشة',RAM:'الرامات',STORAGE:'التخزين',PSU:'الباور سبلاي',CASE:'الكيس',COOLER:'المبرد',FANS:'المراوح'},root=document.getElementById('builderSlots');if(!root)return;root.innerHTML=Object.keys(window.builderCatalog).map(cat=>{const list=window.builderCatalog[cat],brand=window.builderFilters[cat],filtered=list.filter(x=>brand==='all'||x[0]===brand),selected=state.build[cat],brands=[...new Set(list.map(x=>x[0]))],opts=filtered.map(x=>{const i=list.indexOf(x),id='bc_'+cat.toLowerCase()+'_'+i,inf=builderBestOffer(id);return '<option value="'+id+'" '+(selected===id?'selected':'')+'>'+esc(x[0]+' • '+x[1])+' — '+(inf.best?money(inf.best):'السعر حسب العروض')+'</option>'}).join(''),sel=list.find((x,i)=>'bc_'+cat.toLowerCase()+'_'+i===selected),inf=selected?builderBestOffer(selected):null;return '<div class="builderSlot info"><div class="builderSlotHead"><h3>'+labels[cat]+'</h3><span class="builderCount">'+list.length+' خيارات</span></div><div class="builderBrandRow"><button class="brandChip '+(brand==='all'?'active':'')+'" onclick="builderPick(\''+cat+'\',\'all\')">الكل</button>'+brands.map(x=>'<button class="brandChip '+(brand===x?'active':'')+'" onclick="builderPick(\''+cat+'\',\''+esc(x)+'\')">'+esc(x)+'</button>').join('')+'</div><select class="select builderSelect" onchange="chooseBuild(\''+cat+'\',this.value)"><option value="">اختر '+labels[cat]+'</option>'+opts+'</select>'+(sel?'<p class="builderSelected">'+esc(sel.join(' • '))+'</p>':'')+(inf&&inf.best?'<div class="builderPriceLine"><b>'+money(inf.best)+'</b><span>'+inf.offers.length+' عرض • الأرخص</span></div><div class="builderOfferMini">'+inf.offers.slice(0,3).map(p=>'<a href="'+p.url+'" target="_blank" rel="noopener"><span>'+esc(p.store||'متجر')+'</span><b>'+money(p.price)+'</b></a>').join('')+'</div>':'<div class="builderPriceLine missing"><b>السعر حسب العروض</b><span>لا يوجد عرض مؤكد حالياً</span></div>')+'</div>'}).join('');updateBuildSummary()}
 function chooseBuild(k,id){state.build[k]=id;updateBuildSummary();renderBuilder()}
