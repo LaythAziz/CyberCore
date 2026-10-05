@@ -116,3 +116,50 @@ html{scroll-behavior:auto}.top{background:#02070ccc;backdrop-filter:blur(24px) s
 @media(max-width:900px){.searchProductGroup{grid-template-columns:110px minmax(0,1fr)}.searchProductSide{grid-column:1/-1;border-right:0;border-top:1px solid #193647;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:10px}.searchProductSide>b{margin:0}.searchProductSide>small{margin:0}.searchProductSide .btn{width:auto}}
 @media(max-width:600px){.searchProductGroup{grid-template-columns:1fr;gap:10px}.searchProductVisual{min-height:120px}.searchProductSide{grid-template-columns:1fr 1fr}.searchProductSide>span{display:none}.searchProductSide>b{font-size:18px}.searchProductSide .btn{grid-column:1/-1;width:100%}.compareBar{position:static}}
 @media(prefers-reduced-motion:reduce){.page.active,.page.active .sectionHead,.page.active .panel,.page.active .searchResultsHead,.page.active .productCard,.page.active .builderSlot,.page.active .searchProductGroup,.page.active .offer,.page.active .storeCard,.page.active .trustCard,.page.active .usedCard,.page.active .reviewCard{animation:none}.productCard,.builderSlot,.searchProductGroup,.offer,.storeCard,.trustCard,.usedCard,.reviewCard{transition:none}}
+
+/* PRODUCT COMPARISON — CINEMATIC V2 */
+.comparisonShell{display:grid;gap:14px}
+.comparisonHero{grid-template-columns:220px minmax(0,1fr);min-height:220px}
+.comparisonProductVisual{position:relative;display:grid;place-items:center;min-height:220px;border-radius:18px;background:radial-gradient(circle at 50% 45%,#0d3850 0,#06131e 65%,#03080d 100%);overflow:hidden}
+.comparisonProductVisual img{width:100%;height:100%;max-height:220px;object-fit:contain;padding:16px;filter:drop-shadow(0 18px 30px #0009);transition:transform .5s ease}
+.comparisonHero:hover .comparisonProductVisual img{transform:scale(1.05) rotate(-1deg)}
+.visualScan{position:absolute;inset:0;background:linear-gradient(transparent 48%,#4de2ff18 50%,transparent 52%);animation:comparisonScan 3.5s linear infinite;pointer-events:none}
+.comparisonBest{position:relative;overflow:hidden}
+.comparisonBest:after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-90px;top:-90px;background:#39dfff0d;filter:blur(2px);pointer-events:none}
+.bestKicker{font-size:8px!important;letter-spacing:.18em;color:#67dfff!important}
+.comparisonBest strong{font-size:34px}
+.comparisonBestMeta{display:flex;gap:20px;align-items:center;margin:5px 0 12px;padding-top:10px;border-top:1px solid #1b3b4e}
+.comparisonBestMeta span{font-size:8px;color:#6c8796}
+.comparisonBestMeta b{font-size:10px;color:#aeefff}
+.comparisonBuy{width:max-content!important;min-width:190px;text-align:center;text-decoration:none}
+.comparisonNoLink,.offerUnavailableLink{font-size:8px;color:#667f8d}
+.comparisonOffer.best .comparisonRank{box-shadow:0 0 22px #36ddff33;border-color:#55ddff}
+.comparisonOffer.best .comparisonStore b{color:#9ff0ff}
+.comparisonOffer .priceTrend{display:block}
+.priceHistorySection{padding:14px;border:1px solid #193c50;border-radius:18px;background:linear-gradient(145deg,#061723,#040c13);box-shadow:inset 0 0 45px #0be2ff05}
+.priceHistorySectionHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.priceHistorySectionHead h3{margin:0;font-size:14px;color:#f2fbff}
+.priceHistorySectionHead p{margin:4px 0 0;color:#718b9a;font-size:9px}
+.historyStatus{font:800 8px monospace;color:#67ddb2;border:1px solid #225b49;border-radius:99px;padding:5px 8px}
+.priceHistoryChart{display:grid;gap:10px}
+.historyChartHead{display:flex;justify-content:space-between;align-items:end;gap:10px}
+.historyChartHead div{display:grid;gap:3px}
+.historyChartHead b{font-size:10px;color:#dff7ff}.historyChartHead span{font-size:8px;color:#657f8e}.historyChartHead>strong{color:#70e3ff;font-size:12px}
+.historyBars{height:150px;display:flex;align-items:end;gap:6px;padding:15px 8px 0;border-top:1px solid #153447;overflow:hidden}
+.historyBarWrap{height:100%;min-width:34px;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}
+.historyBarWrap .historyValue{font-size:7px;color:#5f7b8b;white-space:nowrap;opacity:0;transition:.2s}
+.historyBarWrap:hover .historyValue{opacity:1;color:#b7eefa}
+.historyBar{display:block;width:100%;max-width:30px;min-height:10px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#55e4ff,#12627e);box-shadow:0 0 18px #39dfff22;transition:.3s transform,.3s filter}
+.historyBarWrap:hover .historyBar{transform:scaleY(1.04);filter:brightness(1.25)}
+.historyBarWrap small{font-size:7px;color:#506b7b;white-space:nowrap}
+.priceHistoryEmpty{display:flex;gap:12px;align-items:center;padding:18px;border:1px dashed #28475a;border-radius:14px;background:#05111a}
+.priceHistoryEmpty .historyIcon{width:40px;height:40px;display:grid;place-items:center;border:1px solid #28536a;border-radius:12px;color:#5edfff;font-size:24px}
+.priceHistoryEmpty b{display:block;color:#e6f8ff;font-size:10px}.priceHistoryEmpty span{display:block;color:#6d8796;font-size:8px;line-height:1.7;margin-top:4px}
+@keyframes comparisonScan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@media(max-width:700px){
+ .modal{padding:8px}.modalBox{width:100%;max-height:96vh;border-radius:19px;padding:13px}
+ .comparisonHero{grid-template-columns:1fr;min-height:0}.comparisonProductVisual{min-height:170px}.comparisonProductVisual img{max-height:170px}
+ .comparisonBest strong{font-size:25px}.comparisonBuy{width:100%!important}.priceHistorySectionHead{align-items:center}
+ .historyBars{gap:3px}.historyBarWrap{min-width:24px}.historyBarWrap small{font-size:6px}
+}
+@media(prefers-reduced-motion:reduce){.visualScan{animation:none}.comparisonProductVisual img,.historyBar{transition:none}}
