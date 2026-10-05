@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="assets/cybercore.css?v=20261004">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.14/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.14/dist/lenis.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/globe.gl/dist/globe.gl.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -22,17 +22,52 @@
 </div></header>
 <main class="container">
 <section id="home" class="page">
-<div class="hero">
-<div class="reveal"><div class="eyebrow">CYBERCORE / IRAQ • PRICE INTELLIGENCE</div><h1>لا تشتري قبل ما تعرف <span class="gradient">الأرخص.</span></h1><p>منصة تقارن أسعار قطع الكمبيوتر من متاجر عراقية حقيقية، تربطك بصفحة المنتج الأصلية، وتفحص التوافق وتساعدك تختار التجميعة الصح — بواجهة مصممة كمنتج تجاري حقيقي.</p>
-<div class="heroActions"><button class="btn primary pulse" onclick="go('search')">ابدأ مقارنة الأسعار</button><button class="btn" onclick="go('builder')">ابنِ جهازك</button><button class="btn ghost" onclick="go('ai')">اسأل CyberCore AI ✦</button></div>
-<div class="stats"><div class="stat"><b>عروض حقيقية</b><span>مرتبطة بصفحات متاجر عراقية</span></div><div class="stat"><b>IQD</b><span>العملة الأساسية</span></div><div class="stat"><b>Compatibility</b><span>فحص قبل القرار</span></div><div class="stat"><b>AI</b><span>مساعد اختيار وتجميع</span></div></div>
-<div class="searchBox"><input id="globalSearch" class="searchInput" placeholder="ابحث: RTX 5070، Ryzen 7، B650، SSD 1TB..." onkeydown="if(event.key==='Enter')quickSearch()"><button class="btn primary" onclick="quickSearch()">بحث ذكي</button></div></div>
-<div class="heroVisual reveal"><div class="scan"></div><div class="pc3d"><div class="tower"></div><div class="glass"></div><div class="board"></div><div class="fanShape"></div><div class="ramShape"></div><div class="gpuShape"></div></div><div class="chip gpuC">GPU • PCIe 5.0</div><div class="chip aiC">AI READY • CYBERCORE</div><div class="float f1"><b>أقل سعر اليوم</b><br>1,450,000 د.ع</div><div class="float f2"><b>توافق</b><br><span class="good">✓ AM5 + DDR5 + PCIe</span></div><div class="float f3"><b>مصدر حقيقي</b><br>متجر عراقي • رابط مباشر</div></div>
+<div class="ccHomeHero">
+  <div class="ccHeroCopy reveal">
+    <div class="eyebrow">CYBERCORE • IRAQ PC PRICE INTELLIGENCE</div>
+    <h1>اعرف السعر.<br><span class="gradient">اختار الصح.</span></h1>
+    <p>محرك واحد للبحث عن قطع الكمبيوتر، مقارنة العروض، بناء جهازك وفحص التوافق — بدون قوائم طويلة وبدون أرقام مصطنعة.</p>
+    <div class="heroActions">
+      <button class="btn primary pulse" onclick="go('search')">ابدأ البحث</button>
+      <button class="btn" onclick="go('builder')">PC Builder</button>
+      <button class="btn ghost" onclick="go('ai')">CyberCore AI ✦</button>
+    </div>
+    <div class="ccMiniStats">
+      <div><b>أسعار IQD</b><span>مقارنة حسب العرض المتوفر</span></div>
+      <div><b>روابط المصدر</b><span>إلى صفحة المتجر الأصلية</span></div>
+      <div><b>توافق</b><span>CPU • Board • RAM • PSU</span></div>
+    </div>
+    <form class="ccHeroSearch" onsubmit="event.preventDefault();document.getElementById('partsQuery').value=document.getElementById('globalSearch').value;go('search');setTimeout(runPartsSearch,80)">
+      <span>⌕</span><input id="globalSearch" class="searchInput" placeholder="RTX 5070، H610، B650، Ryzen 7، SSD 1TB...">
+      <button class="btn primary" type="submit">بحث</button>
+    </form>
+  </div>
+
+  <div class="ccGlobePanel reveal">
+    <div class="ccGlobeHud">
+      <div><span class="hudKicker">GLOBAL PC MARKET</span><strong id="globalPcFigure">278.7M</strong><small>وحدة PC مكتبية/محمولة شُحنت عالمياً في 2025</small></div>
+      <span class="liveBadge"><i></i> VISUAL ACTIVITY</span>
+    </div>
+    <div id="cybercoreGlobe" class="ccGlobe"></div>
+    <div class="ccGlobeLegend">
+      <span><i class="dot cyan"></i> نشاط/مراكز تقنية عالمية — عرض بصري</span>
+      <span><i class="dot pink"></i> مسارات اتصال</span>
+    </div>
+    <div class="ccGlobeSource">المصدر للرقم: Omdia، 2025 PC shipments. هذا الرقم ليس عدّاد مستخدمين حي.</div>
+  </div>
 </div>
-<div class="section"><div class="sectionHead"><div><h2>CyberCore AI</h2><p>مساعد قرار داخل الموقع: يحلل ميزانيتك، القطع والتوافق. النسخة الحالية تعمل محلياً بدون مفتاح API.</p></div><button class="btn ghost" onclick="go('ai')">فتح المساعد الكامل →</button></div><div class="panel smart"><div style="padding:4px"><div class="aiHeader"><div class="aiOrb">✦</div><div><b>ماذا تريد تبني؟</b><small>اكتبها باللهجة العراقية أو بالفصحى</small></div></div><div class="promptRow"><input id="homeAi" class="input" placeholder="مثلاً: أريد تجميعة قيمنق 2.5 مليون بدون شاشة"><button class="btn primary" onclick="runAI(document.getElementById('homeAi').value)">حلّل ✦</button></div><div class="suggestions"><button class="suggestion" onclick="runAI('أريد تجميعة قيمنق بميزانية 2 مليون')">2 مليون قيمنق</button><button class="suggestion" onclick="runAI('هل RTX 5070 تناسب Ryzen 7 7800X3D؟')">فحص توافق</button><button class="suggestion" onclick="runAI('شنو أفضل SSD 1TB؟')">أفضل SSD</button></div><div id="homeAiResult" class="aiResult" style="margin-top:12px"><div class="answer">اكتب طلبك، وأنا أحوّله إلى خطة شراء: قطع مقترحة + ميزانية + تحذيرات توافق + أفضل عرض متوفر بالبيانات الحالية.</div></div></div><div class="aiSide"><h3>ذكاء الأسعار</h3><div class="signal"><span>أفضل GPU ظاهر الآن</span><b class="good">RTX 5070</b></div><div class="signal"><span>أقل عرض</span><b>1,450,000 د.ع</b></div><div class="signal"><span>فارق العرض</span><b class="good">125,000 د.ع</b></div><div class="signal"><span>ملاحظة</span><b class="warn">تحقق من المخزون</b></div></div></div></div>
-<div class="section"><div class="sectionHead"><div><h2>أقوى العروض الآن</h2><p>روابط حقيقية لصفحات المنتجات. الأسعار أدناه مأخوذة من صفحات المتاجر وقت إعداد هذه النسخة.</p></div><button class="btn" onclick="go('deals')">كل العروض →</button></div><div id="homeDeals" class="grid4"></div></div>
-<div class="section"><div class="sectionHead"><div><h2>شبكة المتاجر العراقية</h2><p>شبكة مصادر عراقية متعددة — والهدف توسيعها باستمرار.</p></div></div><div class="storeStrip"><div class="storeCard"><span class="storeLogo">AF</span><div><b>AL FARAH STORE</b><div class="meta">بغداد • صناعة</div></div><a class="btn ghost" href="https://alfarah-store.com" target="_blank" rel="noopener">المتجر ↗</a></div><div class="storeCard"><span class="storeLogo">TL</span><div><b>TechLab+</b><div class="meta">عراق • متجر إلكتروني</div></div><a class="btn ghost" href="https://store.techlab-iq.com" target="_blank" rel="noopener">المتجر ↗</a></div><div class="storeCard"><span class="storeLogo">M</span><div><b>Marvel For Computers</b><div class="meta">عراق • قطع PC</div></div><a class="btn ghost" href="https://marvelpc.com/ar" target="_blank" rel="noopener">المتجر ↗</a></div><div class="storeCard"><span class="storeLogo">GI</span><div><b>GALAXY & 3D</b><div class="meta">العراق • PC & Electronics</div></div><a class="btn ghost" href="https://www.galaxyiraq.com" target="_blank" rel="noopener">المتجر ↗</a></div></div></div>
-<div class="section"><div class="trust"><div class="trustCard"><b>🔗 الرابط الأصلي أولاً</b><p>كل عرض مصمم حتى يوديك إلى صفحة المنتج في المتجر، مو زر وهمي داخل الموقع.</p></div><div class="trustCard"><b>📷 صور منتجات حقيقية</b><p>الصور في هذه النسخة مأخوذة من صفحات المتاجر الفعلية، وليست صوراً مولدة بالذكاء الاصطناعي.</p></div><div class="trustCard"><b>⚠️ القرار النهائي إلك</b><p>السعر والمخزون والضمان تتغير. الأرخص يساعدك تقارن، والمتجر هو المرجع النهائي قبل الدفع.</p></div></div></div>
+
+<div class="ccQuickGrid">
+  <button onclick="go('search')"><span>01</span><b>ابحث عن قطعة</b><small>موديل واحد ← كل العروض</small></button>
+  <button onclick="go('builder')"><span>02</span><b>ابنِ جهازك</b><small>اختيارات كثيرة + مجموع السعر</small></button>
+  <button onclick="go('deals')"><span>03</span><b>شوف الأرخص</b><small>رتّب العروض حسب السعر</small></button>
+  <button onclick="go('stores')"><span>04</span><b>المتاجر</b><small>مصادر وروابط مباشرة</small></button>
+</div>
+
+<div class="section ccHomeDeals">
+  <div class="sectionHead"><div><h2>أحدث العروض</h2><p>نعرض السعر فقط عندما تكون لدينا بيانات عرض مرتبطة بمصدر. السعر النهائي والتوفر عند المتجر.</p></div><button class="btn" onclick="go('deals')">كل العروض →</button></div>
+  <div id="homeDeals" class="grid4"></div>
+</div>
 </section>
 <div class="homeJourney"><button onclick="go('search')"><span class="journeyIndex">01</span><b>بحث القطع</b><small>قارن الموديلات والعروض</small></button><button onclick="go('builder')"><span class="journeyIndex">02</span><b>PC Builder</b><small>ابنِ جهازك وافحص التوافق</small></button><button onclick="go('deals')"><span class="journeyIndex">03</span><b>العروض</b><small>شوف الأرخص أولاً</small></button><button onclick="go('used')"><span class="journeyIndex">04</span><b>المستعمل</b><small>سوق القطع والتجميعات</small></button><button onclick="go('stores')"><span class="journeyIndex">05</span><b>المتاجر</b><small>مصادر عراقية حقيقية</small></button><button onclick="go('about')"><span class="journeyIndex">06</span><b>شرح الموقع</b><small>شلون نشتغل</small></button></div><section id="ai" class="page"><div class="sectionHead"><div><h2>CyberCore AI Copilot ✦</h2><p>محرك قرار للـPC: يفهم الميزانية والاستخدام ويحوّلها إلى توصية قابلة للتنفيذ.</p></div><span class="pill active">LOCAL INTELLIGENCE • DEMO MODE</span></div><div class="panel smart"><div style="padding:5px"><div class="aiHeader"><div class="aiOrb">✦</div><div><b>احچي ويا المساعد</b><small>مثال: «أريد جهاز 1440p بـ 3 مليون، أريد قابلية تطوير»</small></div></div><div class="promptRow"><textarea id="aiInput" class="textarea" placeholder="اكتب طلبك بالتفصيل..."></textarea><button class="btn primary" onclick="runAI(document.getElementById('aiInput').value,'aiResult')">حلّل الطلب</button></div><div class="suggestions"><button class="suggestion" onclick="runAI('أريد PC للألعاب 1440p بميزانية 3 مليون','aiResult')">1440p • 3 مليون</button><button class="suggestion" onclick="runAI('أريد جهاز مونتاج وذكاء اصطناعي بميزانية 5 مليون','aiResult')">AI + مونتاج • 5 مليون</button><button class="suggestion" onclick="runAI('عندي Ryzen 7 7800X3D وأريد GPU مناسب','aiResult')">ترقية GPU</button></div><div id="aiResult" class="aiResult" style="margin-top:13px"><div class="answer">جاهز. المساعد يقدر يقترح قطع ويشرح سبب الاختيار، لكن لا يعتبر بديلاً عن الأسعار الحية أو مواصفات الشركة.</div></div></div><div class="aiSide"><h3>قدرات المحرك</h3><div class="signal"><span>تحليل الميزانية</span><b class="good">✓</b></div><div class="signal"><span>توافق CPU / Board / RAM</span><b class="good">✓</b></div><div class="signal"><span>حساب الطاقة</span><b class="good">✓</b></div><div class="signal"><span>مقارنة العروض</span><b class="good">✓</b></div><div class="signal"><span>LLM خارجي</span><b class="warn">يحتاج API</b></div></div></div></section>
 <section id="search" class="page">
@@ -65,6 +100,6 @@
 <div id="postModal" class="modal" onclick="if(event.target===this)closeModal('postModal')"><div class="modalBox" style="width:min(600px,100%)"><div class="modalHead"><h2>نشر قطعة مستعملة</h2><button class="close" onclick="closeModal('postModal')">×</button></div><div class="form"><input id="postName" class="input" placeholder="اسم القطعة"><input id="postPrice" class="input" type="number" placeholder="السعر بالدينار"><select id="postCat" class="select"><option>كرت شاشة</option><option>معالج</option><option>رام</option><option>تخزين</option><option>لوحة أم</option><option>شاشة</option><option>كيس</option></select><input id="postPhone" class="input" placeholder="رقم التواصل"><textarea id="postDesc" class="textarea" placeholder="الحالة، العمر، الملحقات..."></textarea><button class="btn primary" onclick="savePost()">نشر</button></div></div></div>
 <div id="reviewModal" class="modal" onclick="if(event.target===this)closeModal('reviewModal')"><div class="modalBox" style="width:min(600px,100%)"><div class="modalHead"><h2>رأيك يهمنا</h2><button class="close" onclick="closeModal('reviewModal')">×</button></div><div class="form"><input id="reviewName" class="input" placeholder="الاسم"><textarea id="reviewText" class="textarea" placeholder="شنو رأيك بالموقع؟"></textarea><button class="btn primary" onclick="saveReview()">نشر الرأي</button></div></div></div>
 <div id="toast" class="toast"></div>
-<script src="assets/cybercore.js?v=20261004"></script>
+<script src="assets/cybercore.js?v=20261005"></script>\n<script src="assets/cybercore-globe.js?v=20261005"></script>
 </body>
 </html>
