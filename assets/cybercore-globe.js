@@ -62,7 +62,7 @@
       .arcDashLength(.28)
       .arcDashGap(.85)
       .arcDashAnimateTime(1800)
-      .ringColor(()=>t=>`rgba(41,232,255,${1-t})`)
+       .ringColor(()=>'#29e8ff')
       .ringMaxRadius(3)
       .ringPropagationSpeed(2.6)
       .ringRepeatPeriod(1100)
@@ -87,14 +87,6 @@
     window.addEventListener('resize',resize,{passive:true});
     resize();
 
-    let pulse=0;
-    setInterval(()=>{
-      pulse++;
-      const base=278.7;
-      const live=base+Math.sin(pulse*.7)*.18;
-      const node=document.getElementById('globalPcFigure');
-      if(node) node.textContent=live.toFixed(1)+'M';
-    },1800);
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,350),{once:true});
