@@ -184,7 +184,7 @@ now=datetime.now(timezone.utc).isoformat()
 history_path="data/catalog/price-history.json"
 try:
     with open(history_path,"r",encoding="utf-8") as f:
-        previous_history=json.load(f)
+        previous_history=json.load(f)\n        if isinstance(previous_history.get("products"), dict):\n            previous_history=previous_history["products"]
 except Exception:
     previous_history={}
 
@@ -208,7 +208,7 @@ for p in all_products:
     )
 
 with open("data/catalog/price-history.json","w",encoding="utf-8") as f:
-    json.dump({p.get("id"):p.get("priceHistory",[]) for p in all_products if p.get("id")},f,ensure_ascii=False,indent=2)
+    json.dump({"version":1,"generatedAt":now,"products":{p.get("id"):p.get("priceHistory",[]) for p in all_products if p.get("id")}},f,ensure_ascii=False,indent=2)
 
 with open("data/catalog/products.json","w",encoding="utf-8") as f:
     json.dump({"version":3,"generatedAt":now,"count":len(all_products),"products":all_products},f,ensure_ascii=False,indent=2)
