@@ -24,6 +24,6 @@ jobs:
         run: |
           git config user.name "CyberCore Catalog Bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/catalog/products.json data/catalog-sync-status.json
+          git add data/catalog/products.json data/catalog/price-history.json data/catalog-sync-status.json
           git diff --cached --quiet || git commit -m "chore: sync public Iraqi store catalogs"
           git push
