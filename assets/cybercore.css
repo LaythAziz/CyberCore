@@ -163,3 +163,14 @@ html{scroll-behavior:auto}.top{background:#02070ccc;backdrop-filter:blur(24px) s
  .historyBars{gap:3px}.historyBarWrap{min-width:24px}.historyBarWrap small{font-size:6px}
 }
 @media(prefers-reduced-motion:reduce){.visualScan{animation:none}.comparisonProductVisual img,.historyBar{transition:none}}
+
+/* 2026-10 CYBERCORE GLOBE + SIMPLE UI */
+.ccGlobe{min-height:520px!important;position:relative;overflow:hidden;border-radius:24px;cursor:grab;background:radial-gradient(circle at 50% 45%,#0b3045 0,#04101a 58%,#01050a 100%)}
+.ccGlobe:active{cursor:grabbing}.ccGlobe canvas{display:block;width:100%;height:100%;min-height:520px;touch-action:none}
+.ccGlobePanel{position:relative}.ccGlobePanel:after{content:"CYBERCORE EARTH";position:absolute;top:84px;left:18px;font:800 8px/1 monospace;letter-spacing:.18em;color:#5de7ff;border:1px solid #24556c;background:#03121be6;padding:7px 9px;border-radius:99px;pointer-events:none}
+.languageControl{display:flex;align-items:center}.languageControl select{height:36px;max-width:105px;background:#06131e;color:#cceefa;border:1px solid #29495d;border-radius:10px;padding:0 8px;font-size:10px;outline:0}.languageControl select:focus{border-color:#58d7ff;box-shadow:0 0 0 3px #58d7ff12}
+.moreNavBtn{position:relative;background:none;border:0;color:#9db2c2;padding:12px 13px;font-size:12px;white-space:nowrap}.moreNavBtn:hover{color:#fff}.moreNavMenu{position:absolute;top:66px;right:0;display:none;min-width:170px;padding:7px;border:1px solid #29465b;background:#06111beF;border-radius:14px;box-shadow:0 25px 70px #000b;z-index:120}.moreNavMenu.show{display:grid;gap:4px}.moreNavMenu button{border:1px solid transparent;background:#071521;color:#a9bfcc;border-radius:9px;text-align:right;padding:9px 10px;font-size:10px}.moreNavMenu button:hover{border-color:#2c6179;color:#fff;background:#0a2030}
+.bar{position:relative}.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.homeJourney{display:none}
+@media(max-width:720px){.languageControl select{max-width:72px;height:34px;font-size:9px}.moreNavMenu{position:fixed;top:62px;right:10px}.ccGlobe,.ccGlobe canvas{min-height:390px}.ccGlobePanel:after{top:70px}.nav{gap:0}.nav button,.moreNavBtn{padding:9px 8px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.ccGlobe canvas{filter:none}}
